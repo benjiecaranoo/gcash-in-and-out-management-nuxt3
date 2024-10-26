@@ -1,0 +1,11 @@
+@use 'vuetify/settings' with (
+  $font-primary: '#0A0A0A',
+  $font-secondary: '#474747',
+  $font-tertiary: '#474747',
+  $font-disabled: '#CECECE',
+  $font-white: '#FFFFFF',
+
+  $card-bg: '#FFFFFF',
+  $fields-tags: '#F3F3F5',
+  $stroke: '#E5E5E5'
+);
