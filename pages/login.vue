@@ -1,17 +1,49 @@
 <script setup lang="ts">
-  import LoginForm from '~/components/LoginForm.vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '~/stores/auth'
+import LoginForm from '~/components/LoginForm.vue'
+
+const authStore = useAuthStore()
+const router = useRouter()
+const loading = ref(false)
+const error = ref('')
+
+const form = ref({
+  email: '',
+  password: ''
+})
+
+const handleLogin = async () => {
+  loading.value = true
+  error.value = ''
+  
+  try {
+    await authStore.login(form.value.email, form.value.password)
+    router.push('/')
+  } catch (err: any) {
+    error.value = err.message || 'Login failed. Please try again.'
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleSocialLogin = async (provider: 'google' | 'facebook' | 'github') => {
+  try {
+    // Implement social login logic here
+    console.log(`Logging in with ${provider}`)
+  } catch (err: any) {
+    error.value = `${provider} login failed. Please try again.`
+  }
+}
 </script>
+
 <template>
-   <v-app>
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-md w-full space-y-8">
-      <div>
-          <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Sign in to your account
-          </h2>
-      </div>
-      <LoginForm />
-      </div>
-      </div>
-   </v-app>
+  <LoginForm
+    v-model:form="form"
+    :loading="loading"
+    :error="error"
+    @submit="handleLogin"
+    @social-login="handleSocialLogin"
+  />
 </template>
