@@ -1,5 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import vuetify from 'vite-plugin-vuetify';
+import { fa } from 'vuetify/locale';
+import auth from './middleware/auth';
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
@@ -40,16 +42,8 @@ export default defineNuxtConfig({
       apiBase: process.env.NUXT_PUBLIC_API_BASE
     }
   },
-  sanctum: {
-    baseUrl: 'https://gcash-in-and-out-tracker-api.test/',
-    // cookie: {
-    //   options: {
-    //     secure: false
-    //   }
-    // }
-  },
   typescript: {
-    strict: true
+    strict: false,
   },
   modules: [
     async (_options, nuxt) => {
@@ -61,7 +55,42 @@ export default defineNuxtConfig({
     },
     '@pinia/nuxt',
     '@nuxt/eslint',
-    'dayjs-nuxt',
-    'nuxt-auth-sanctum'
-  ]
+    'dayjs-nuxt'
+  ],
+  // router: { // configure based on your needs
+  //   middleware: 'auth', // middleware/auth.ts
+  //   auth: {
+  //     localStorage: false,
+  //     cookie: {
+  //       options: {
+  //         expires: 28800
+  //       }
+  //     },
+  //     redirect: {
+  //       login: '/login',
+  //       logout: '/',
+  //       home: '/'
+  //     },
+  //     strategies: {
+  //       local: {
+  //         endpoints: {
+  //           login: { url: '/auth/login', method: 'post' },
+  //           logout: { url: '/auth/logout', method: 'post' },
+  //           user: { url: '/auth/user', method: 'get', propertyName: 'user' }
+  //         },
+  //         token: {
+  //           property: 'access_token',
+  //           maxAge: 28800
+  //         },
+  //         user: {
+  //           property: false
+  //         },
+  //         autoFetchUser: true
+  //       }
+  //     }
+  //   },
+  //   env: {
+  //     apiBase: process.env.NUXT_PUBLIC_API_BASE
+  //   }
+  // }
 })
