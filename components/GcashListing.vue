@@ -317,9 +317,9 @@ const getTextColor = (type: GcashTransaction['type']) => {
 
 <template>
   <div>
-    <v-card>
-      <v-card-title>
-        Manage GCASH Transactions
+    <v-card class="mb-4" elevation="0">
+      <v-card-title class="d-flex align-center py-3 px-4">
+        <span class="text-h5 font-weight-bold">Manage GCASH Transactions</span>
         <v-spacer></v-spacer>
         <v-btn
           color="primary"
@@ -336,6 +336,7 @@ const getTextColor = (type: GcashTransaction['type']) => {
           single-line
           hide-details
           density="compact"
+          class="max-width-200"
         ></v-text-field>
       </v-card-title>
 
@@ -628,5 +629,24 @@ const getTextColor = (type: GcashTransaction['type']) => {
 
 .text-info {
   color: rgb(var(--v-theme-info)) !important;
+}
+
+.max-width-200 {
+  max-width: 200px;
+}
+
+/* Update card styles for better contrast */
+:deep(.v-card) {
+  border-radius: 12px;
+}
+
+:deep(.v-data-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Optional: Add hover effect to table rows */
+:deep(.v-data-table-row:hover) {
+  background-color: rgba(var(--v-theme-primary), 0.05);
 }
 </style> 

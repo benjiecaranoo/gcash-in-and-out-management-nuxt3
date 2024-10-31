@@ -8,8 +8,19 @@ definePageMeta({
 </script>
 
 <template>
-  <v-container>
-    <!-- <h1 class="text-h4 mb-4">GCASH Management</h1> -->
-    <GcashListing />
-  </v-container>
+  <div class="app-background-animated">
+    <v-container class="py-8">
+      <v-row justify="center">
+        <v-col cols="12" class="mx-auto">
+          <GcashListing />
+        </v-col>
+      </v-row>
+    </v-container>
+  </div>
 </template>
+
+<style scoped>
+.v-container {
+  max-width: 1440px;
+}
+</style>
