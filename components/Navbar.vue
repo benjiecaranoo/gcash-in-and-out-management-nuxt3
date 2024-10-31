@@ -96,7 +96,7 @@ onMounted(() => {
           rounded="lg"
           class="mb-2"
           min-height="44"
-          active-color="white"
+          color="white"
           :class="{ 'active-route': $route.path === route.href }"
         >
           <template v-slot:prepend>

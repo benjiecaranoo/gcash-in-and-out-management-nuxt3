@@ -9,6 +9,14 @@ export function useValidation() {
     minLength: (fieldName: string, min: number) => ({
       $validator: (v: string) => v.length >= min,
       $message: `${fieldName} must be at least ${min} characters`
+    }),
+    email: () => ({
+      $validator: (v: string) => /.+@.+\..+/.test(v),
+      $message: 'Must be a valid email'
+    }),
+    sameAs: (fieldName: string, otherField: string) => ({
+      $validator: (v: string, formData: any) => v === formData[otherField],
+      $message: `${fieldName} must match ${otherField}`
     })
   }
 

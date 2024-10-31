@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
-import LoginForm from '~/components/LoginForm.vue'
+import RegistrationForm from '~/components/RegistrationForm.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -10,34 +10,28 @@ const loading = ref(false)
 const error = ref('')
 
 const form = ref({
+  name: '',
   email: '',
-  password: ''
+  password: '',
+  password_confirmation: ''
 })
 
-const handleLogin = async () => {
+const handleRegister = async () => {
   loading.value = true
   error.value = ''
   
   try {
-    await authStore.login(form.value.email, form.value.password)
+    await authStore.register(form.value)
     router.push('/')
   } catch (err: any) {
-    if (err.error_code === 'INVALID_CREDENTIALS') {
-      error.value = 'Invalid email or password'
+    if (err.errors) {
+      // Handle validation errors
+      error.value = Object.values(err.errors)[0] as string
     } else {
-      error.value = err.message || 'Login failed. Please try again.'
+      error.value = err.message || 'Registration failed. Please try again.'
     }
   } finally {
     loading.value = false
-  }
-}
-
-const handleSocialLogin = async (provider: 'google' | 'facebook' | 'github') => {
-  try {
-    // Implement social login logic here
-    console.log(`Logging in with ${provider}`)
-  } catch (err: any) {
-    error.value = `${provider} login failed. Please try again.`
   }
 }
 
@@ -47,27 +41,26 @@ definePageMeta({
 </script>
 
 <template>
-  <LoginForm
+  <RegistrationForm
     v-model:form="form"
     :loading="loading"
     :error="error"
-    @submit="handleLogin"
-    @social-login="handleSocialLogin"
+    @submit="handleRegister"
   >
-    <template #register-link>
+    <template #login-link>
       <div class="text-center mt-6">
         <p class="text-medium-emphasis">
-          Don't have an account?
+          Already have an account?
           <v-btn
             variant="text"
             color="primary"
             class="px-2 font-weight-bold"
-            to="/register"
+            to="/login"
           >
-            Sign Up
+            Sign In
           </v-btn>
         </p>
       </div>
     </template>
-  </LoginForm>
-</template>
+  </RegistrationForm>
+</template> 

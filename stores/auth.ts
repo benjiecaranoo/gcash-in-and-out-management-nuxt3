@@ -23,6 +23,13 @@ interface ErrorResponse {
   errors: any;
 }
 
+interface RegisterData {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+}
+
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     user: null,
@@ -83,6 +90,26 @@ export const useAuthStore = defineStore('auth', {
       
       if (error.value) {
         this.logout()
+      }
+    },
+    async register(data: RegisterData): Promise<void> {
+      const { data: response, error } = await useApi('/auth/register', {
+        method: 'POST',
+        body: data,
+      })
+
+      if(response.value) {
+        const accessToken = useCookie('accessToken')
+
+        if (response.value && response.value.data) {
+          const loginData = response.value.data as AuthState;
+          this.user = loginData.user;
+          accessToken.value = loginData.access_token;
+        }
+      }
+
+      if (error.value) {
+        throw error.value.data;
       }
     },
   },

@@ -11,50 +11,37 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'update:form': [form: { email: string; password: string }]
+  'update:form': [form: { name: string; email: string; password: string; password_confirmation: string }]
   submit: []
-  'social-login': [provider: 'google' | 'facebook' | 'github']
 }>()
 
 const form = ref({
+  name: '',
   email: '',
-  password: ''
+  password: '',
+  password_confirmation: ''
 })
 
 const rules = {
+  name: {
+    required: validations.required('Name'),
+    minLength: validations.minLength('Name', 3)
+  },
   email: {
     required: validations.required('Email'),
+    email: validations.email()
   },
   password: {
     required: validations.required('Password'),
-    minLength: validations.minLength('Password', 6),
+    minLength: validations.minLength('Password', 6)
   },
+  password_confirmation: {
+    required: validations.required('Password confirmation'),
+    sameAsPassword: validations.sameAs('Password confirmation', 'password')
+  }
 }
 
 const v$ = useVuelidate(rules, form, { $autoDirty: true })
-
-const email = computed({
-  get: () => form.value.email,
-  set: (value) => {
-    form.value.email = value
-    emit('update:form', { ...form.value, email: value })
-  }
-})
-
-const password = computed({
-  get: () => form.value.password,
-  set: (value) => {
-    form.value.password = value
-    emit('update:form', { ...form.value, password: value })
-  }
-})
-
-const errors = computed<Record<string, string | undefined>>(() => {
-  return Object.keys(form.value).reduce((prev, curr) => {
-    prev[curr] = v$.value[curr]?.$errors[0]?.$message
-    return prev
-  }, {} as Record<string, string | undefined>)
-})
 
 const handleSubmit = async () => {
   if (!(await v$.value.$validate())) return
@@ -62,6 +49,7 @@ const handleSubmit = async () => {
 }
 
 const showPassword = ref(false)
+const showPasswordConfirmation = ref(false)
 </script>
 
 <template>
@@ -74,17 +62,17 @@ const showPassword = ref(false)
               <!-- Logo/Brand Section -->
               <div class="text-center pt-16 pb-8">
                 <v-avatar color="primary" size="96" class="mb-6">
-                  <v-icon size="56" color="white">mdi-wallet</v-icon>
+                  <v-icon size="56" color="white">mdi-account-plus</v-icon>
                 </v-avatar>
                 <h1 class="text-h3 font-weight-bold primary--text mb-3">
-                  Welcome Back
+                  Create Account
                 </h1>
                 <p class="text-h6 text-medium-emphasis">
-                  Sign in to continue to your account
+                  Sign up to get started
                 </p>
               </div>
 
-              <!-- Login Form -->
+              <!-- Registration Form -->
               <v-card-text class="pt-8 px-6">
                 <v-form @submit.prevent="handleSubmit" class="login-form">
                   <v-slide-y-transition>
@@ -100,19 +88,31 @@ const showPassword = ref(false)
                   </v-slide-y-transition>
 
                   <v-text-field
-                    v-model="email"
-                    :error-messages="errors.email"
+                    v-model="form.name"
+                    :error-messages="v$.name.$errors.map(e => e.$message)"
+                    label="Full Name"
+                    prepend-inner-icon="mdi-account"
+                    variant="outlined"
+                    required
+                    class="mb-2"
+                    @update:modelValue="$emit('update:form', { ...form, name: $event })"
+                  />
+
+                  <v-text-field
+                    v-model="form.email"
+                    :error-messages="v$.email.$errors.map(e => e.$message)"
                     label="Email"
                     prepend-inner-icon="mdi-email"
                     variant="outlined"
                     required
                     autocomplete="email"
                     class="mb-2"
+                    @update:modelValue="$emit('update:form', { ...form, email: $event })"
                   />
 
                   <v-text-field
-                    v-model="password"
-                    :error-messages="errors.password"
+                    v-model="form.password"
+                    :error-messages="v$.password.$errors.map(e => e.$message)"
                     label="Password"
                     prepend-inner-icon="mdi-lock"
                     :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
@@ -120,8 +120,22 @@ const showPassword = ref(false)
                     required
                     :type="showPassword ? 'text' : 'password'"
                     @click:append-inner="showPassword = !showPassword"
-                    autocomplete="current-password"
                     class="mb-2"
+                    @update:modelValue="$emit('update:form', { ...form, password: $event })"
+                  />
+
+                  <v-text-field
+                    v-model="form.password_confirmation"
+                    :error-messages="v$.password_confirmation.$errors.map(e => e.$message)"
+                    label="Confirm Password"
+                    prepend-inner-icon="mdi-lock-check"
+                    :append-inner-icon="showPasswordConfirmation ? 'mdi-eye-off' : 'mdi-eye'"
+                    variant="outlined"
+                    required
+                    :type="showPasswordConfirmation ? 'text' : 'password'"
+                    @click:append-inner="showPasswordConfirmation = !showPasswordConfirmation"
+                    class="mb-2"
+                    @update:modelValue="$emit('update:form', { ...form, password_confirmation: $event })"
                   />
 
                   <v-btn
@@ -132,47 +146,12 @@ const showPassword = ref(false)
                     :loading="loading"
                     class="mt-6 login-btn"
                   >
-                    Sign In
+                    Create Account
                   </v-btn>
 
-                  <!-- Social Login Divider -->
-                  <div class="social-divider my-6">
-                    <span class="social-divider-text">or continue with</span>
-                  </div>
-
-                  <!-- Social Login Buttons -->
-                  <div class="social-buttons">
-                    <v-btn
-                      variant="outlined"
-                      class="social-btn"
-                      @click="$emit('social-login', 'google')"
-                    >
-                      <v-icon start color="error">mdi-google</v-icon>
-                      Google
-                    </v-btn>
-
-                    <v-btn
-                      variant="outlined"
-                      class="social-btn"
-                      @click="$emit('social-login', 'facebook')"
-                    >
-                      <v-icon start color="blue">mdi-facebook</v-icon>
-                      Facebook
-                    </v-btn>
-
-                    <v-btn
-                      variant="outlined"
-                      class="social-btn"
-                      @click="$emit('social-login', 'github')"
-                    >
-                      <v-icon start>mdi-github</v-icon>
-                      GitHub
-                    </v-btn>
-                  </div>
+                  <!-- Use slot for login link -->
+                  <slot name="login-link"></slot>
                 </v-form>
-
-                <!-- Use slot for register link -->
-                <slot name="register-link"></slot>
               </v-card-text>
             </v-card>
           </v-col>
@@ -315,95 +294,16 @@ const showPassword = ref(false)
   }
 }
 
-.social-divider {
-  position: relative;
-  text-align: center;
-  margin: 24px 0;
-  
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: calc(50% - 60px);
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      rgba(var(--v-theme-primary), 0.05) 0%,
-      rgba(var(--v-theme-primary), 0.2) 50%,
-      rgba(var(--v-theme-primary), 0.05) 100%
-    );
-  }
-
-  &::before {
-    left: 0;
-  }
-
-  &::after {
-    right: 0;
-  }
-
-  &-text {
-    background: rgba(255, 255, 255, 0.9);
-    padding: 0 16px;
-    color: rgba(var(--v-theme-primary), 0.7);
-    font-size: 0.875rem;
-    position: relative;
-  }
-}
-
-.social-buttons {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-
-  .social-btn {
-    text-transform: none;
-    font-weight: 500;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(var(--v-theme-primary), 0.1);
-    box-shadow: 
-      0 2px 8px rgba(var(--v-theme-primary), 0.1),
-      inset 0 1px 2px rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-    
-    &:hover {
-      transform: translateY(-1px);
-      background: rgba(255, 255, 255, 0.95);
-      box-shadow: 
-        0 4px 12px rgba(var(--v-theme-primary), 0.15),
-        inset 0 1px 2px rgba(255, 255, 255, 0.4);
-    }
-
-    .v-icon {
-      margin-right: 8px;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-    }
-  }
-}
-
 @media (max-width: 600px) {
-  .social-buttons {
-    grid-template-columns: 1fr;
-  }
-
-  .social-divider {
-    &::before,
-    &::after {
-      width: calc(50% - 80px);
-    }
-  }
-
   .login-card {
     margin: 16px;
     padding: 0 20px 24px;
   }
-
+  
   :deep(.text-h3) {
     font-size: 2rem !important;
   }
-
+  
   :deep(.text-h6) {
     font-size: 1rem !important;
   }
@@ -436,4 +336,4 @@ const showPassword = ref(false)
 .v-leave-to {
   opacity: 0;
 }
-</style>
+</style> 
