@@ -22,7 +22,11 @@ const handleLogin = async () => {
     await authStore.login(form.value.email, form.value.password)
     router.push('/')
   } catch (err: any) {
-    error.value = err.message || 'Login failed. Please try again.'
+    if (err.error_code === 'INVALID_CREDENTIALS') {
+      error.value = 'Invalid email or password'
+    } else {
+      error.value = err.message || 'Login failed. Please try again.'
+    }
   } finally {
     loading.value = false
   }

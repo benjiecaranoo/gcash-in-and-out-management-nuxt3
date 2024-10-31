@@ -1,30 +1,64 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useVuelidate } from '@vuelidate/core'
+import { useValidation } from '~/composables/useValidation'
 
-defineProps<{
+const { validations } = useValidation()
+
+const props = defineProps<{
   loading: boolean
   error: string
-  form: {
-    email: string
-    password: string
-  }
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   'update:form': [form: { email: string; password: string }]
   submit: []
   'social-login': [provider: 'google' | 'facebook' | 'github']
 }>()
 
+const form = ref({
+  email: '',
+  password: ''
+})
+
 const rules = {
-  email: [
-    (v: string) => !!v || 'Email is required',
-    (v: string) => /.+@.+\..+/.test(v) || 'Email must be valid'
-  ],
-  password: [
-    (v: string) => !!v || 'Password is required',
-    (v: string) => v.length >= 6 || 'Password must be at least 6 characters'
-  ]
+  email: {
+    required: validations.required('Email'),
+  },
+  password: {
+    required: validations.required('Password'),
+    minLength: validations.minLength('Password', 6),
+  },
+}
+
+const v$ = useVuelidate(rules, form, { $autoDirty: true })
+
+const email = computed({
+  get: () => form.value.email,
+  set: (value) => {
+    form.value.email = value
+    emit('update:form', { ...form.value, email: value })
+  }
+})
+
+const password = computed({
+  get: () => form.value.password,
+  set: (value) => {
+    form.value.password = value
+    emit('update:form', { ...form.value, password: value })
+  }
+})
+
+const errors = computed<Record<string, string | undefined>>(() => {
+  return Object.keys(form.value).reduce((prev, curr) => {
+    prev[curr] = v$.value[curr]?.$errors[0]?.$message
+    return prev
+  }, {} as Record<string, string | undefined>)
+})
+
+const handleSubmit = async () => {
+  if (!(await v$.value.$validate())) return
+  emit('submit')
 }
 
 const showPassword = ref(false)
@@ -52,7 +86,7 @@ const showPassword = ref(false)
 
               <!-- Login Form -->
               <v-card-text class="pt-6">
-                <v-form @submit.prevent="$emit('submit')" class="login-form">
+                <v-form @submit.prevent="handleSubmit" class="login-form">
                   <v-slide-y-transition>
                     <v-alert
                       v-if="error"
@@ -66,20 +100,19 @@ const showPassword = ref(false)
                   </v-slide-y-transition>
 
                   <v-text-field
-                    v-model="form.email"
-                    :rules="rules.email"
+                    v-model="email"
+                    :error-messages="errors.email"
                     label="Email"
                     prepend-inner-icon="mdi-email"
                     variant="outlined"
                     required
                     autocomplete="email"
                     class="mb-2"
-                    @update:modelValue="$emit('update:form', { ...form, email: $event })"
                   />
 
                   <v-text-field
-                    v-model="form.password"
-                    :rules="rules.password"
+                    v-model="password"
+                    :error-messages="errors.password"
                     label="Password"
                     prepend-inner-icon="mdi-lock"
                     :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
@@ -89,7 +122,6 @@ const showPassword = ref(false)
                     @click:append-inner="showPassword = !showPassword"
                     autocomplete="current-password"
                     class="mb-2"
-                    @update:modelValue="$emit('update:form', { ...form, password: $event })"
                   />
 
                   <v-btn
