@@ -2,9 +2,9 @@
 import { useAuthStore } from '~/stores/auth'
 import { storeToRefs } from 'pinia'
 
-// definePageMeta({
-//   middleware: ['auth']
-// })
+definePageMeta({
+  middleware: ['auth']
+})
 
 const authStore = useAuthStore()
 const { user } = storeToRefs(authStore)
