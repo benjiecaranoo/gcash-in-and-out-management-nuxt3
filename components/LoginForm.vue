@@ -66,118 +66,121 @@ const showPassword = ref(false)
 
 <template>
   <div class="login-wrapper">
-    <div class="login-page">
-      <v-container fluid class="fill-height">
-        <v-row align="center" justify="center">
-          <v-col cols="12" sm="10" md="8" lg="6" class="mx-auto">
-            <v-card class="login-card mx-auto" elevation="8">
-              <!-- Logo/Brand Section -->
-              <div class="text-center pt-16 pb-8">
-                <v-avatar color="primary" size="96" class="mb-6">
-                  <v-icon size="56" color="white">mdi-wallet</v-icon>
-                </v-avatar>
-                <h1 class="text-h3 font-weight-bold primary--text mb-3">
-                  Welcome Back
-                </h1>
-                <p class="text-h6 text-medium-emphasis">
-                  Sign in to continue to your account
-                </p>
-              </div>
+    <div class="login-container">
+      <!-- Left side - Login Form -->
+      <div class="form-section">
+        <div class="form-content">
+          <div class="text-center mb-8">
+            <v-avatar color="primary" size="80" class="mb-4">
+              <v-icon size="40" color="white">mdi-wallet</v-icon>
+            </v-avatar>
+            <h1 class="text-h4 font-weight-bold primary--text">Welcome Back</h1>
+            <p class="text-body-1 text-medium-emphasis mt-1">Sign in to continue</p>
+          </div>
 
-              <!-- Login Form -->
-              <v-card-text class="pt-8 px-6">
-                <v-form @submit.prevent="handleSubmit" class="login-form">
-                  <v-slide-y-transition>
-                    <v-alert
-                      v-if="error"
-                      type="error"
-                      variant="tonal"
-                      closable
-                      class="mb-4"
-                    >
-                      {{ error }}
-                    </v-alert>
-                  </v-slide-y-transition>
+          <v-form @submit.prevent="handleSubmit" class="login-form">
+            <v-slide-y-transition>
+              <v-alert
+                v-if="error"
+                type="error"
+                variant="tonal"
+                closable
+                class="mb-4"
+              >
+                {{ error }}
+              </v-alert>
+            </v-slide-y-transition>
 
-                  <v-text-field
-                    v-model="email"
-                    :error-messages="errors.email"
-                    label="Email"
-                    prepend-inner-icon="mdi-email"
-                    variant="outlined"
-                    required
-                    autocomplete="email"
-                    class="mb-2"
-                  />
+            <v-text-field
+              v-model="email"
+              :error-messages="errors.email"
+              label="Email"
+              prepend-inner-icon="mdi-email"
+              variant="outlined"
+              required
+              autocomplete="email"
+              class="mb-2"
+            />
 
-                  <v-text-field
-                    v-model="password"
-                    :error-messages="errors.password"
-                    label="Password"
-                    prepend-inner-icon="mdi-lock"
-                    :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-                    variant="outlined"
-                    required
-                    :type="showPassword ? 'text' : 'password'"
-                    @click:append-inner="showPassword = !showPassword"
-                    autocomplete="current-password"
-                    class="mb-2"
-                  />
+            <v-text-field
+              v-model="password"
+              :error-messages="errors.password"
+              label="Password"
+              prepend-inner-icon="mdi-lock"
+              :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+              variant="outlined"
+              required
+              :type="showPassword ? 'text' : 'password'"
+              @click:append-inner="showPassword = !showPassword"
+              autocomplete="current-password"
+              class="mb-4"
+            />
 
-                  <v-btn
-                    type="submit"
-                    color="primary"
-                    size="large"
-                    block
-                    :loading="loading"
-                    class="mt-6 login-btn"
-                  >
-                    Sign In
-                  </v-btn>
+            <v-btn
+              type="submit"
+              color="primary"
+              size="large"
+              block
+              :loading="loading"
+              class="login-btn mb-6"
+            >
+              Sign In
+            </v-btn>
 
-                  <!-- Social Login Divider -->
-                  <div class="social-divider my-6">
-                    <span class="social-divider-text">or continue with</span>
-                  </div>
+            <div class="social-divider">
+              <span class="social-divider-text">or continue with</span>
+            </div>
 
-                  <!-- Social Login Buttons -->
-                  <div class="social-buttons">
-                    <v-btn
-                      variant="outlined"
-                      class="social-btn"
-                      @click="$emit('social-login', 'google')"
-                    >
-                      <v-icon start color="error">mdi-google</v-icon>
-                      Google
-                    </v-btn>
+            <div class="social-buttons">
+              <v-btn
+                variant="outlined"
+                class="social-btn"
+                @click="$emit('social-login', 'google')"
+              >
+                <v-icon start color="error">mdi-google</v-icon>
+                Google
+              </v-btn>
 
-                    <v-btn
-                      variant="outlined"
-                      class="social-btn"
-                      @click="$emit('social-login', 'facebook')"
-                    >
-                      <v-icon start color="blue">mdi-facebook</v-icon>
-                      Facebook
-                    </v-btn>
+              <v-btn
+                variant="outlined"
+                class="social-btn"
+                @click="$emit('social-login', 'facebook')"
+              >
+                <v-icon start color="blue">mdi-facebook</v-icon>
+                Facebook
+              </v-btn>
 
-                    <v-btn
-                      variant="outlined"
-                      class="social-btn"
-                      @click="$emit('social-login', 'github')"
-                    >
-                      <v-icon start>mdi-github</v-icon>
-                      GitHub
-                    </v-btn>
-                  </div>
-                </v-form>
+              <v-btn
+                variant="outlined"
+                class="social-btn"
+                @click="$emit('social-login', 'github')"
+              >
+                <v-icon start>mdi-github</v-icon>
+                GitHub
+              </v-btn>
+            </div>
 
-                <!-- Use slot for register link -->
-                <slot name="register-link"></slot>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-container>
+            <slot name="register-link"></slot>
+          </v-form>
+        </div>
+      </div>
+
+      <!-- Right side - Welcome Message -->
+      <div class="welcome-section">
+        <div class="welcome-content">
+          <div class="welcome-text">
+            <h2 class="text-h3 font-weight-bold text-white mb-4">
+              GCASH In and Out Tracker
+            </h2>
+            <p class="text-h6 text-white text-opacity-80">
+              Manage your GCASH transactions with ease. Track your cash in, cash out, and load transactions all in one place.
+            </p>
+            <div class="mt-16">
+              <v-icon size="120" color="white" class="welcome-icon" icon="mdi-wallet-outline"></v-icon>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -188,47 +191,51 @@ const showPassword = ref(false)
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 24px;
   background: linear-gradient(135deg, 
-    rgba(var(--v-theme-primary), 0.08) 0%,
-    rgba(var(--v-theme-primary), 0.03) 100%
+    rgba(var(--v-theme-primary), 0.05) 0%,
+    rgba(var(--v-theme-primary), 0.02) 100%
   );
-  position: relative;
-  overflow: hidden;
+}
 
-  &::before {
-    content: '';
-    position: absolute;
+.login-container {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  min-height: 600px;
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(var(--v-theme-primary), 0.05);
+}
+
+.form-section {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+
+  .form-content {
     width: 100%;
-    height: 100%;
-    background: radial-gradient(
-      circle at 50% 50%,
-      rgba(255, 255, 255, 0.8) 0%,
-      rgba(255, 255, 255, 0.1) 100%
-    );
-    opacity: 0.4;
+    max-width: 400px;
   }
 }
 
-.login-page {
-  width: 100%;
-  padding: 20px;
+.welcome-section {
+  flex: 1;
   position: relative;
-}
-
-.login-card {
-  border-radius: 24px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  background: rgba(255, 255, 255, 0.7) !important;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 
-    0 8px 32px rgba(var(--v-theme-primary), 0.15),
-    0 2px 8px rgba(var(--v-theme-primary), 0.1),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.5) !important;
-  padding: 0 32px 32px;
-  max-width: 580px;
-  margin: 0 auto;
-  position: relative;
+  background: linear-gradient(135deg,
+    rgba(var(--v-theme-primary), 1) 0%,
+    rgba(var(--v-theme-primary), 0.8) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
   overflow: hidden;
 
   &::before {
@@ -237,25 +244,25 @@ const showPassword = ref(false)
     top: 0;
     left: 0;
     right: 0;
-    height: 100%;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.3) 0%,
-      rgba(255, 255, 255, 0.1) 100%
+    bottom: 0;
+    background: radial-gradient(
+      circle at 70% 30%,
+      rgba(255, 255, 255, 0.2) 0%,
+      transparent 70%
     );
-    border-radius: inherit;
   }
 
-  .v-avatar {
-    box-shadow: 
-      0 8px 32px rgba(var(--v-theme-primary), 0.2),
-      inset 0 -2px 8px rgba(0, 0, 0, 0.1),
-      inset 0 2px 8px rgba(255, 255, 255, 0.3);
-    background: linear-gradient(
-      135deg,
-      rgba(var(--v-theme-primary), 1) 0%,
-      rgba(var(--v-theme-primary), 0.8) 100%
-    ) !important;
+  .welcome-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 400px;
+  }
+
+  .welcome-icon {
+    opacity: 0.9;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+    animation: float 6s ease-in-out infinite;
   }
 }
 
@@ -383,29 +390,21 @@ const showPassword = ref(false)
   }
 }
 
-@media (max-width: 600px) {
-  .social-buttons {
-    grid-template-columns: 1fr;
+@media (max-width: 959px) {
+  .login-container {
+    flex-direction: column-reverse;
   }
 
-  .social-divider {
-    &::before,
-    &::after {
-      width: calc(50% - 80px);
+  .welcome-section {
+    padding: 40px 24px;
+    
+    .welcome-content {
+      padding: 20px 0;
     }
   }
 
-  .login-card {
-    margin: 16px;
-    padding: 0 20px 24px;
-  }
-
-  :deep(.text-h3) {
-    font-size: 2rem !important;
-  }
-
-  :deep(.text-h6) {
-    font-size: 1rem !important;
+  .form-section {
+    padding: 32px 24px;
   }
 }
 
