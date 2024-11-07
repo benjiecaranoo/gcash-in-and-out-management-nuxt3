@@ -11,6 +11,7 @@ interface GcashTransaction {
   reference_number: string
   phone_number: string
   load_service?: 'TM' | 'GLOBE' | 'DITO' | 'SMART' | 'TNT' | 'ESIM'
+  status?: 'PAID' | 'UNPAID'
 }
 
 // Table headers
@@ -21,6 +22,7 @@ const headers = [
   { title: 'Phone Number', key: 'phone_number' },
   { title: 'Load Service', key: 'load_service' },
   { title: 'Reference #', key: 'reference_number' },
+  { title: 'Status', key: 'status' },
   { title: 'Description', key: 'description' },
   { title: 'Actions', key: 'actions' },
 ]
@@ -49,7 +51,8 @@ const transactions = ref<GcashTransaction[]>([
     description: 'Load from bank',
     created_at: '2024-03-15',
     reference_number: 'REF123456',
-    phone_number: '09123456789'
+    phone_number: '09123456789',
+    status: 'PAID'
   },
   {
     id: 2,
@@ -58,7 +61,8 @@ const transactions = ref<GcashTransaction[]>([
     description: 'Payment for services',
     created_at: '2024-03-16',
     reference_number: 'REF789012',
-    phone_number: '09187654321'
+    phone_number: '09187654321',
+    status: 'UNPAID'
   },
   {
     id: 3,
@@ -68,7 +72,8 @@ const transactions = ref<GcashTransaction[]>([
     created_at: '2024-03-17',
     reference_number: 'REF345678',
     phone_number: '09198765432',
-    load_service: 'GLOBE'
+    load_service: 'GLOBE',
+    status: 'PAID'
   }
 ])
 
@@ -460,6 +465,15 @@ const getTextColor = (type: GcashTransaction['type']) => {
                 ₱{{ itemToDelete.amount.toLocaleString() }}
               </v-list-item-title>
             </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon icon="mdi-text" class="mr-2" />
+              </template>
+              <v-list-item-title>
+                {{ itemToDelete.status }}
+              </v-list-item-title>
+            </v-list-item>
             
             <v-list-item>
               <template v-slot:prepend>
@@ -559,6 +573,16 @@ const getTextColor = (type: GcashTransaction['type']) => {
                     :rules="[rules.required]"
                     required
                   ></v-text-field>
+                </v-col>
+
+                <v-col cols="12">
+                  <v-select
+                    v-model="editForm.status"
+                    :items="['PAID', 'UNPAID']"
+                    label="Status"
+                    :rules="[rules.required]"
+                    required
+                  ></v-select>
                 </v-col>
 
                 <v-col cols="12">
