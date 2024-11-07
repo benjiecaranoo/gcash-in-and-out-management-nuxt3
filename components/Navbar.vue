@@ -60,11 +60,8 @@ onMounted(() => {
       v-if="isAuthenticated"
       v-model="isDrawerOpen"
       :permanent="$vuetify.display.mdAndUp"
-      :temporary="$vuetify.display.smAndDown"
       color="primary"
       class="modern-drawer"
-      :rail="$vuetify.display.lgAndUp"
-      :rail-width="56"
     >
       <!-- User Profile Section -->
       <div class="px-4 py-4">
