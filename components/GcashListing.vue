@@ -4,7 +4,7 @@ import { usePagination } from '~/composables/usePagination'
 
 interface GcashTransaction {
   id: number
-  type: 'CASH_IN' | 'CASH_OUT' | 'LOAD'
+  type: 'cash_in' | 'cash_out' | 'LOAD'
   amount: number
   description: string
   created_at: string
@@ -46,7 +46,7 @@ const search = ref('')
 const transactions = ref<GcashTransaction[]>([
   {
     id: 1,
-    type: 'CASH_IN',
+    type: 'cash_in',
     amount: 1000,
     description: 'Load from bank',
     created_at: '2024-03-15',
@@ -56,7 +56,7 @@ const transactions = ref<GcashTransaction[]>([
   },
   {
     id: 2,
-    type: 'CASH_OUT',
+    type: 'cash_out',
     amount: 500,
     description: 'Payment for services',
     created_at: '2024-03-16',
@@ -125,7 +125,7 @@ const formTitle = computed(() => formMode.value === 'add' ? 'Add Transaction' : 
 
 // Initialize form with empty values
 const initialFormState = {
-  type: 'CASH_IN' as 'CASH_IN' | 'CASH_OUT' | 'LOAD',
+  type: 'cash_in' as 'cash_in' | 'cash_out' | 'load',
   amount: 0,
   description: '',
   phone_number: '',
@@ -137,9 +137,9 @@ const editForm = ref({ ...initialFormState })
 
 // Transaction types for select input
 const transactionTypes = [
-  { title: 'Cash In', value: 'CASH_IN' },
-  { title: 'Cash Out', value: 'CASH_OUT' },
-  { title: 'Load', value: 'LOAD' }
+  { title: 'Cash In', value: 'cash_in' },
+  { title: 'Cash Out', value: 'cash_out' },
+  { title: 'Load', value: 'load' }
 ]
 
 // Load service types
@@ -185,7 +185,7 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     // Validate load service if type is LOAD
-    if (editForm.value.type === 'LOAD' && !editForm.value.load_service) {
+    if (editForm.value.type === 'load' && !editForm.value.load_service) {
       alert('Please select a load service')
       return
     }
@@ -195,8 +195,8 @@ const handleSubmit = async () => {
         id: Math.max(...transactions.value.map(t => t.id)) + 1,
         created_at: new Date().toISOString(),
         ...editForm.value,
-        type: editForm.value.type as 'CASH_IN' | 'CASH_OUT' | 'LOAD',
-        load_service: editForm.value.type === 'LOAD' ? editForm.value.load_service : undefined
+        type: editForm.value.type as 'cash_in' | 'cash_out' | 'load',
+        load_service: editForm.value.type === 'load' ? editForm.value.load_service : undefined
       }
       transactions.value.unshift(newTransaction)
     } else {
@@ -205,8 +205,8 @@ const handleSubmit = async () => {
         transactions.value[index] = {
           ...transactions.value[index],
           ...editForm.value,
-          type: editForm.value.type as 'CASH_IN' | 'CASH_OUT' | 'LOAD',
-          load_service: editForm.value.type === 'LOAD' ? editForm.value.load_service : undefined
+          type: editForm.value.type as 'cash_in' | 'cash_out' | 'load',
+          load_service: editForm.value.type === 'load' ? editForm.value.load_service : undefined
         }
       }
     }
@@ -283,11 +283,11 @@ onMounted(() => {
 })
 
 // Add computed property for showing load service field
-const showLoadService = computed(() => editForm.value.type === 'LOAD')
+const showLoadService = computed(() => editForm.value.type === 'load')
 
 // Watch for type changes to handle load service
 watch(() => editForm.value.type, (newType) => {
-  if (newType !== 'LOAD') {
+  if (newType !== 'load') {
     editForm.value.load_service = undefined
   }
 })
@@ -295,9 +295,9 @@ watch(() => editForm.value.type, (newType) => {
 // Add these helper functions
 const getTypeColor = (type: GcashTransaction['type']) => {
   switch (type) {
-    case 'CASH_IN':
+    case 'cash_in':
       return 'success'
-    case 'CASH_OUT':
+    case 'cash_out':
       return 'error'
     case 'LOAD':
       return 'info'
@@ -308,9 +308,9 @@ const getTypeColor = (type: GcashTransaction['type']) => {
 
 const getTextColor = (type: GcashTransaction['type']) => {
   switch (type) {
-    case 'CASH_IN':
+    case 'cash_in':
       return 'text-success'
-    case 'CASH_OUT':
+    case 'cash_out':
       return 'text-error'
     case 'LOAD':
       return 'text-info'

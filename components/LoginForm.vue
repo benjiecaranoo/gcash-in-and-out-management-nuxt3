@@ -170,7 +170,7 @@ const showPassword = ref(false)
         <div class="welcome-content">
           <div class="welcome-text">
             <h2 class="text-h3 font-weight-bold text-white mb-4">
-              GCASH In and Out Tracker
+              GCASH Cash In, Cash Out And Load Tracker
             </h2>
             <p class="text-h6 text-white text-opacity-80">
               Manage your GCASH transactions with ease. Track your cash in, cash out, and load transactions all in one place.
