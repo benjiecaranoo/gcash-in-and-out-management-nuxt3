@@ -35,10 +35,11 @@ export interface ApiOptions {
     body?: object | FormData | null;
     tempToken?: string;
     customHeader?: { 'Verification-Token'?: string; 'Content-Type'?: string };
-    watchVariables?: any[];
+    watchVariables?: boolean;
     transform?: () => void;
     credentials?: RequestCredentials | Ref<RequestCredentials | undefined> | undefined;
     preventDeduplication?: boolean; // this prevents de-duplication of requests
+    immediateResponse?: boolean;
 }
 
 let useUniqueIdCounter = 0;
@@ -67,8 +68,9 @@ export const useApi = <T>(
     credentials,
     tempToken,
     customHeader = {},
-    watchVariables = [],
+    watchVariables = false,
     preventDeduplication = false,
+    immediateResponse = true,
   }: ApiOptions
 ): AsyncData<ApiResponse, FetchError<object | null> | null> => {
   const config = useRuntimeConfig();
@@ -93,5 +95,6 @@ export const useApi = <T>(
       options.headers.set('Accept', 'application/json');
     },
     watch: watchVariables,
+    immediate: immediateResponse,
   }) as AsyncData<ApiResponse, FetchError<object | null> | null>;
 };

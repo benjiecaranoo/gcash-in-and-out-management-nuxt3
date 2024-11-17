@@ -82,6 +82,7 @@ export const useAuthStore = defineStore('auth', {
     async fetchUser(): Promise<void> {
       const { data, error } = await useApi('/auth/me', {
         method: 'GET',
+        immediateResponse: true
       })
 
       if(data.value) {

@@ -1,21 +1,32 @@
+// {
+//   // https://nuxt.com/docs/guide/concepts/typescript
+//   "compilerOptions": {
+//     "baseUrl": ".",
+//     "paths": {
+//       "~/*": ["./*"],
+//       "@/*": ["./*"],
+//       "~~/*": ["./*"],
+//       "@@/*": ["./*"]
+//     },
+//     "forceConsistentCasingInFileNames": true,
+//     "strict": true
+//   },
+//   "exclude": [
+//     "./.nuxt/tsconfig.json",
+//     "node_modules", 
+//     ".nuxt", 
+//     "dist"
+//   ],
+//   // "extends": 
+// }
 {
   // https://nuxt.com/docs/guide/concepts/typescript
+  "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["./*"],
-      "@/*": ["./*"],
-      "~~/*": ["./*"],
-      "@@/*": ["./*"]
-    },
     "forceConsistentCasingInFileNames": true,
-    "strict": true
-  },
-  "exclude": [
-    "./.nuxt/tsconfig.json",
-    "node_modules", 
-    ".nuxt", 
-    "dist"
-  ]
-  // "extends": 
+    "strict": true,
+    "module": "ESNext",
+    "target": "ESNext"
+  }
 }
+

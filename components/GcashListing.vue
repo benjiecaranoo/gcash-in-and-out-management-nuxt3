@@ -1,18 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { usePagination } from '~/composables/usePagination'
+import { useGcashStore } from '~/stores/gcash-transaction';
+import { GcashTransaction } from '~/types/gcash-transaction'
 
-interface GcashTransaction {
-  id: number
-  type: 'cash_in' | 'cash_out' | 'LOAD'
-  amount: number
-  description: string
-  created_at: string
-  reference_number: string
-  phone_number: string
-  load_service?: 'TM' | 'GLOBE' | 'DITO' | 'SMART' | 'TNT' | 'ESIM'
-  status?: 'PAID' | 'UNPAID'
-}
+const { fetchTransactions } = useGcashStore()
+
+const transactionStore = useGcashStore()
+
 
 // Table headers
 const headers = [
@@ -21,7 +16,7 @@ const headers = [
   { title: 'Amount', key: 'amount' },
   { title: 'Phone Number', key: 'phone_number' },
   { title: 'Load Service', key: 'load_service' },
-  { title: 'Reference #', key: 'reference_number' },
+  { title: 'Reference #', key: 'reference' },
   { title: 'Status', key: 'status' },
   { title: 'Description', key: 'description' },
   { title: 'Actions', key: 'actions' },
@@ -36,79 +31,18 @@ const {
   sortBy,
   paginationInfo
 } = usePagination({
-  itemsPerPage: 10,
+  itemsPerPage: 2,
   initialPage: 1
 })
 
 const search = ref('')
-
-// Mock data - replace this with actual API call
-const transactions = ref<GcashTransaction[]>([
-  {
-    id: 1,
-    type: 'cash_in',
-    amount: 1000,
-    description: 'Load from bank',
-    created_at: '2024-03-15',
-    reference_number: 'REF123456',
-    phone_number: '09123456789',
-    status: 'PAID'
-  },
-  {
-    id: 2,
-    type: 'cash_out',
-    amount: 500,
-    description: 'Payment for services',
-    created_at: '2024-03-16',
-    reference_number: 'REF789012',
-    phone_number: '09187654321',
-    status: 'UNPAID'
-  },
-  {
-    id: 3,
-    type: 'LOAD',
-    amount: 2000,
-    description: 'Load GLOBE',
-    created_at: '2024-03-17',
-    reference_number: 'REF345678',
-    phone_number: '09198765432',
-    load_service: 'GLOBE',
-    status: 'PAID'
-  }
-])
-
-// Computed properties for filtered data
-const filteredItems = computed(() => {
-  let items = [...transactions.value]
-  
-  if (search.value) {
-    const searchTerm = search.value.toLowerCase()
-    items = items.filter(item => 
-      item.description.toLowerCase().includes(searchTerm) ||
-      item.reference_number.toLowerCase().includes(searchTerm) ||
-      item.phone_number.includes(searchTerm)
-    )
-  }
-  
-  // Update total items for pagination
-  totalItems.value = items.length
-  
-  // Apply pagination
-  const start = (page.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return items.slice(start, end)
-})
+const transactions = computed(() => transactionStore.transactions)
 
 // Methods
 const fetchData = async () => {
   loading.value = true
   try {
-    // In real implementation, this would be an API call with pagination params
-    await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
-    
-    // You would typically get these values from the API response
-    // totalItems.value = response.total
-    // transactions.value = response.data
+    await fetchTransactions(itemsPerPage.value)
     
     loading.value = false
   } catch (error) {
@@ -116,6 +50,24 @@ const fetchData = async () => {
     loading.value = false
   }
 }
+
+// Computed properties for filtered data
+const filteredItems = computed(() => {
+  let items = transactions.value
+
+  if (search.value) {
+    const searchTerm = search.value.toLowerCase()
+    items = items.filter((item: GcashTransaction) => 
+      item.reference.toLowerCase().includes(searchTerm) ||
+      item.phone_number.includes(searchTerm)
+    )
+  }
+  
+  // Apply pagination
+  const start = (page.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return items ? items.slice(start, end) : []
+})
 
 // Modify modal state
 const showFormModal = ref(false)
@@ -129,7 +81,7 @@ const initialFormState = {
   amount: 0,
   description: '',
   phone_number: '',
-  reference_number: '',
+  reference: '',
   load_service: undefined as 'TM' | 'GLOBE' | 'DITO' | 'SMART' | 'TNT' | 'ESIM' | undefined
 }
 
@@ -175,7 +127,7 @@ const handleEdit = (item: GcashTransaction) => {
     amount: item.amount,
     description: item.description,
     phone_number: item.phone_number,
-    reference_number: item.reference_number,
+    reference: item.reference,
     load_service: item.load_service
   }
   showFormModal.value = true
@@ -277,9 +229,9 @@ watch([page, itemsPerPage, sortBy], () => {
   fetchData()
 })
 
-// Initial data fetch
-onMounted(() => {
-  fetchData()
+// // Initial data fetch
+onMounted(async () => {
+  await fetchData()
 })
 
 // Add computed property for showing load service field
@@ -399,9 +351,9 @@ const getTextColor = (type: GcashTransaction['type']) => {
           <span v-else :class="getTextColor(item.type)">-</span>
         </template>
 
-        <template v-slot:item.reference_number="{ item }">
+        <template v-slot:item.reference="{ item }">
           <span :class="getTextColor(item.type)">
-            {{ item.reference_number }}
+            {{ item.reference }}
           </span>
         </template>
 
@@ -568,7 +520,7 @@ const getTextColor = (type: GcashTransaction['type']) => {
 
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="editForm.reference_number"
+                    v-model="editForm.reference"
                     label="Reference Number"
                     :rules="[rules.required]"
                     required
