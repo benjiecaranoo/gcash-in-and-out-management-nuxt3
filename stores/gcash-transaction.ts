@@ -33,21 +33,25 @@ export const useGcashStore = defineStore('gcash', {
     //   })
     // },
 
-    // async deleteGcash(id: string): Promise<void> {
-    //   const { error } = await useApi(`/auth/transactions/${id}`, {
-    //     method: 'DELETE',
-    //   })
-    // },
+    async deleteGcash(id: string): Promise<void> {
+      console.log(id)
+      const { status, error } = await useApi(`/auth/transactions/${id}`, {
+        method: 'DELETE',
+      })
+
+      if(error) {
+        throw new Error('Failed to delete Gcash transaction')
+      }
+    },
 
     async fetchTransactions(perPage: number): Promise<void> {
-      console.log(perPage)
       const { data, error } = await useApi('/auth/transactions', {
         method: 'GET',
         params: {
           per_page: perPage
         }
       })
-      
+
       if(data) {
         this.transactions = data.value.data as GcashTransaction[];
         

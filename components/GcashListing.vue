@@ -3,9 +3,10 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { usePagination } from '~/composables/usePagination'
 import { useGcashStore } from '~/stores/gcash-transaction';
 import { GcashTransaction } from '~/types/gcash-transaction'
+import useSnackbar from '@/composables/useSnackbar';
 
-const { fetchTransactions } = useGcashStore()
-
+const { fetchTransactions, deleteGcash } = useGcashStore()
+const { showSnackbar } = useSnackbar();
 const transactionStore = useGcashStore()
 
 
@@ -31,7 +32,7 @@ const {
   sortBy,
   paginationInfo
 } = usePagination({
-  itemsPerPage: 2,
+  itemsPerPage: 5,
   initialPage: 1
 })
 
@@ -150,12 +151,12 @@ const handleSubmit = async () => {
         type: editForm.value.type as 'cash_in' | 'cash_out' | 'load',
         load_service: editForm.value.type === 'load' ? editForm.value.load_service : undefined
       }
-      transactions.value.unshift(newTransaction)
+      transactionStore.transactions.unshift(newTransaction)
     } else {
-      const index = transactions.value.findIndex(item => item.id === editingItem.value?.id)
+      const index = transactionStore.transactions.findIndex(item => item.id === editingItem.value?.id)
       if (index !== -1) {
-        transactions.value[index] = {
-          ...transactions.value[index],
+        transactionStore.transactions[index] = {
+          ...transactionStore.transactions[index],
           ...editForm.value,
           type: editForm.value.type as 'cash_in' | 'cash_out' | 'load',
           load_service: editForm.value.type === 'load' ? editForm.value.load_service : undefined
@@ -194,26 +195,29 @@ const confirmDelete = async () => {
 
   loading.value = true
   try {
-    // Here you would make the API call to delete the item
-    console.log('Deleting item:', itemToDelete.value)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await deleteGcash(itemToDelete.value.id)
     
     // Remove item from local state
-    transactions.value = transactions.value.filter(
-      item => item.id !== itemToDelete.value?.id
+    transactionStore.transactions = transactionStore.transactions.filter(
+      (item: GcashTransaction) => item.id !== itemToDelete.value?.id
     )
+
+    await fetchData();
     
     // Close modal and reset
     showDeleteModal.value = false
     itemToDelete.value = null
     
-    // Optional: Show success message
-    // You might want to add a toast/snackbar notification system
+    showSnackbar({
+      text: 'Transaction successfully deleted.',
+      state: 'success',
+    });
   } catch (error) {
     console.error('Error deleting item:', error)
-    // Optional: Show error message
+    showSnackbar({
+      text: 'Error deleting item: ' + error.message,
+      state: 'error'
+    })
   } finally {
     loading.value = false
   }
