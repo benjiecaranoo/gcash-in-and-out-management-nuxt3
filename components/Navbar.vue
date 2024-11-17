@@ -5,11 +5,12 @@ import { useAuthStore } from '~/stores/auth'
 import { HomeIcon, ChartBarIcon } from '@heroicons/vue/24/outline'
 
 const authStore = useAuthStore()
+const { fetchUser, logout, isAuthenticated, user } = useAuthStore();
 const isDrawerOpen = ref(false)
 const router = useRouter()
 const toggleDrawer = () => isDrawerOpen.value = !isDrawerOpen.value
 
-const isAuthenticated = computed(() => authStore.isAuthenticated)
+const isUserAuthenticated = computed(() => isAuthenticated)
 
 const authRoutes = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
@@ -17,28 +18,14 @@ const authRoutes = [
 ]
 
 const userLogout = async () => {
-  await authStore.logout()
+  await logout()
   router.push('/login')
 }
 
-// Fetch user data on component mount
-const fetchUser = async () => {
-  try {
-    await authStore.fetchUser()
-  } catch (error) {
-    console.error('Error fetching user:', error)
-    // Optionally handle error (e.g., redirect to login if unauthorized)
-    if (error.response?.status === 401) {
-      await userLogout()
-    }
-  }
-}
+onMounted( () => {
+  fetchUser();
+});
 
-onMounted(() => {
-  if (isAuthenticated.value) {
-    fetchUser()
-  }
-})
 </script>
 
 <template>
@@ -47,7 +34,7 @@ onMounted(() => {
     <v-app-bar 
       flat 
       elevation="0" 
-      v-if="isAuthenticated && $vuetify.display.smAndDown" 
+      v-if="isUserAuthenticated && $vuetify.display.smAndDown" 
       color="primary" 
       class=""
     >
@@ -57,7 +44,7 @@ onMounted(() => {
 
     <!-- Navigation Drawer - Only show when authenticated -->
     <v-navigation-drawer
-      v-if="isAuthenticated"
+      v-if="isUserAuthenticated"
       v-model="isDrawerOpen"
       :permanent="$vuetify.display.mdAndUp"
       color="primary"
@@ -66,9 +53,9 @@ onMounted(() => {
       <!-- User Profile Section -->
       <div class="px-4 py-4">
         <div class="d-flex align-center">
-          <v-avatar size="42" class="mr-3">
+          <!-- <v-avatar size="42" class="mr-3">
             <v-img src="https://randomuser.me/api/portraits/men/78.jpg" />
-          </v-avatar>
+          </v-avatar> -->
           <div class="flex-grow-1">
             <div class="text-subtitle-1 font-weight-medium text-white mb-n1">
               {{ authStore.user?.name || 'User' }}
@@ -89,7 +76,6 @@ onMounted(() => {
           :key="route.name"
           :to="route.href"
           :prepend-icon="route.icon"
-          :title="route.name"
           rounded="lg"
           class="mb-2"
           min-height="44"
@@ -99,6 +85,9 @@ onMounted(() => {
           <template v-slot:prepend>
             <v-icon :icon="route.icon" size="22" class="ml-1" />
           </template>
+          <v-list-item-title>
+          	{{ route.name }}
+          </v-list-item-title>
         </v-list-item>
       </v-list>
 
@@ -110,7 +99,7 @@ onMounted(() => {
           rounded="lg"
           class="logout-item mb-2"
           min-height="44"
-          active-color="white"
+          color="white"
         >
           <template v-slot:prepend>
             <v-icon icon="mdi-logout" size="22" class="ml-1" />
