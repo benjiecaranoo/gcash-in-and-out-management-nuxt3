@@ -86,8 +86,11 @@ const initialFormState = {
   description: '',
   phone_number: '',
   reference: '',
-  status: 'UNPAID' as 'PAID' | 'UNPAID',
-  load_service: undefined as 'TM' | 'GLOBE' | 'DITO' | 'SMART' | 'TNT' | 'ESIM' | undefined
+  status: 'unpaid' as 'paid' | 'unpaid',
+  load_service: undefined as 
+    'tm' | 'globe' | 'dito' | 'smart' | 'tnt' |
+    'esim' | 'sky' | 'smart_bro' | 'globe_at_home' |
+    'cignal' | 'sky' | undefined
 }
 
 const editForm = ref({ ...initialFormState })
@@ -101,12 +104,13 @@ const transactionTypes = [
 
 // Load service types
 const loadServiceTypes = [
-  { title: 'TM', value: 'TM' },
-  { title: 'Globe', value: 'GLOBE' },
-  { title: 'DITO', value: 'DITO' },
-  { title: 'Smart', value: 'SMART' },
-  { title: 'TNT', value: 'TNT' },
-  { title: 'ESIM', value: 'ESIM' }
+  { title: 'TM', value: 'tm' },
+  { title: 'Globe', value: 'globe' },
+  { title: 'DITO', value: 'dito' },
+  { title: 'Smart', value: 'smart' },
+  { title: 'TNT', value: 'tnt' },
+  { title: 'ESIM', value: 'esim' },
+  { title: 'Others', value: 'others'}
 ]
 
 // Form validation rules
@@ -156,14 +160,16 @@ const handleEdit = (item: GcashTransaction) => {
   showFormModal.value = true
 }
 
+const errorFields = ref();
 const v$ = useVuelidate(rules, editForm, { $autoDirty: true })
 
 const errors = computed<Record<string, string | undefined>>(() => {
   return Object.keys(editForm.value).reduce((prev, curr) => {
-    prev[curr] = v$.value[curr]?.$errors[0]?.$message
+    prev[curr] = v$.value[curr]?.$errors[0]?.$message || errorFields.value?.[curr]?.[0];
     return prev
   }, {} as Record<string, string | undefined>)
 })
+
 
 const handleSubmit = async () => {
   if (!(await v$.value.$validate())) return
@@ -172,7 +178,9 @@ const handleSubmit = async () => {
   try {
     // Validate load service if type is LOAD
     if (editForm.value.type === 'load' && !editForm.value.load_service) {
-      showSnackbar({text: 'Please select a load service', state: 'error'})
+      errorFields.value = {
+        load_service: ['Load service provider is required.']
+      }
       return
     }
 
@@ -186,8 +194,6 @@ const handleSubmit = async () => {
       }
 
       await createGcash(newTransaction);
-
-      // transactionStore.transactions.unshift(newTransaction)
     } else {
       const index = transactionStore.transactions.findIndex(item => item.id === editingItem.value?.id)
       if (index !== -1) {
@@ -205,11 +211,13 @@ const handleSubmit = async () => {
     editForm.value = { ...initialFormState }
     
   } catch (error) {
-    console.error('Error saving item:', error)
+    console.error(error)
+    errorFields.value = error.errors;
   } finally {
     loading.value = false
   }
 }
+
 
 const cancelForm = () => {
   showFormModal.value = false
@@ -381,7 +389,7 @@ const getTextColor = (type: GcashTransaction['type']) => {
 
         <template v-slot:item.load_service="{ item }">
           <v-chip
-            v-if="item.type === 'LOAD' && item.load_service"
+            v-if="item.type === 'load' && item.load_service"
             size="small"
             :color="getTypeColor(item.type)"
             variant="outlined"
@@ -570,7 +578,7 @@ const getTextColor = (type: GcashTransaction['type']) => {
                 <v-col cols="12">
                   <v-select
                     v-model="editForm.status"
-                    :items="['PAID', 'UNPAID']"
+                    :items="['paid', 'unpaid']"
                     label="Status"
                     :error-messages="errors.status"
                     required

@@ -1,6 +1,7 @@
 import  { defineStore } from 'pinia'
 import { useApi } from '@/composables/useApi'
 import type { GcashTransaction, GcashTransactionData, ErrorResponse } from '@/types/gcash-transaction'
+import ApiErrorResponse from '~/types/ApiErrorResponse';
 
 export const useGcashStore = defineStore('gcash', {
   state: (): GcashState => ({
@@ -9,22 +10,18 @@ export const useGcashStore = defineStore('gcash', {
   }),
   actions: {
     async createGcash(formData: GcashTransactionData): Promise<void> {
-      console.log(formData)
       const { error, data } = await useApi('/auth/transactions', {
         method: 'POST',
         body: formData,
       })
 
       if (error.value) {
-        console.log(error)
-        const errorResponse = error.value as ErrorResponse;
-        if(errorResponse.statusCode === 401) {
-          throw errorResponse;
-        }
-        throw errorResponse;
+        throw new ApiErrorResponse(error.value.data)
       }
-      // console.log('test')
-      console.log(data.value)
+
+      if(data.value) {
+        this.transactions.unshift(data.value.data)
+      }
     },
 
     // async getGcash(id: string): Promise<void> {
