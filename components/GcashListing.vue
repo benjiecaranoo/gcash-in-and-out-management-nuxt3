@@ -1,13 +1,16 @@
+import type { GcashTransaction } from '~/types/gcash-transaction'
+
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { usePagination } from '~/composables/usePagination'
 import { useGcashStore } from '~/stores/gcash-transaction';
-import { GcashTransaction } from '~/types/gcash-transaction'
 import useSnackbar from '@/composables/useSnackbar';
+import { useVuelidate } from '@vuelidate/core'
 
-const { fetchTransactions, deleteGcash } = useGcashStore()
+const { fetchTransactions, deleteGcash, createGcash } = useGcashStore()
 const { showSnackbar } = useSnackbar();
 const transactionStore = useGcashStore()
+const { validations } = useValidation()
 
 
 // Table headers
@@ -83,6 +86,7 @@ const initialFormState = {
   description: '',
   phone_number: '',
   reference: '',
+  status: 'UNPAID' as 'PAID' | 'UNPAID',
   load_service: undefined as 'TM' | 'GLOBE' | 'DITO' | 'SMART' | 'TNT' | 'ESIM' | undefined
 }
 
@@ -107,10 +111,27 @@ const loadServiceTypes = [
 
 // Form validation rules
 const rules = {
-  required: (v: any) => !!v || 'This field is required',
-  number: (v: any) => !isNaN(v) || 'Must be a number',
-  phone: (v: string) => /^09\d{9}$/.test(v) || 'Must be a valid phone number (e.g., 09123456789)',
-  minAmount: (v: number) => v > 0 || 'Amount must be greater than 0'
+  amount: {
+    required: validations.required('Amount'),
+    minAmount: validations.minAmount(1),
+    number: validations.number
+  },
+  phone_number: {
+    required: validations.required('Phone number'),
+    phone: validations.phone
+  },
+  description: {
+    required: validations.required('Description')
+  },
+  reference: {
+    required: validations.required('Reference number')
+  },
+  type: {
+    required: validations.required('Transaction type')
+  },
+  status: {
+    required: validations.required('Transaction status')
+  }
 }
 
 const handleAdd = () => {
@@ -129,17 +150,29 @@ const handleEdit = (item: GcashTransaction) => {
     description: item.description,
     phone_number: item.phone_number,
     reference: item.reference,
+    status: item.status,
     load_service: item.load_service
   }
   showFormModal.value = true
 }
 
+const v$ = useVuelidate(rules, editForm, { $autoDirty: true })
+
+const errors = computed<Record<string, string | undefined>>(() => {
+  return Object.keys(editForm.value).reduce((prev, curr) => {
+    prev[curr] = v$.value[curr]?.$errors[0]?.$message
+    return prev
+  }, {} as Record<string, string | undefined>)
+})
+
 const handleSubmit = async () => {
+  if (!(await v$.value.$validate())) return
+
   loading.value = true
   try {
     // Validate load service if type is LOAD
     if (editForm.value.type === 'load' && !editForm.value.load_service) {
-      alert('Please select a load service')
+      showSnackbar({text: 'Please select a load service', state: 'error'})
       return
     }
 
@@ -151,7 +184,10 @@ const handleSubmit = async () => {
         type: editForm.value.type as 'cash_in' | 'cash_out' | 'load',
         load_service: editForm.value.type === 'load' ? editForm.value.load_service : undefined
       }
-      transactionStore.transactions.unshift(newTransaction)
+
+      await createGcash(newTransaction);
+
+      // transactionStore.transactions.unshift(newTransaction)
     } else {
       const index = transactionStore.transactions.findIndex(item => item.id === editingItem.value?.id)
       if (index !== -1) {
@@ -483,7 +519,7 @@ const getTextColor = (type: GcashTransaction['type']) => {
                     item-title="title"
                     item-value="value"
                     label="Transaction Type"
-                    :rules="[rules.required]"
+                    :error-messages="errors.type"
                     required
                   ></v-select>
                 </v-col>
@@ -496,7 +532,7 @@ const getTextColor = (type: GcashTransaction['type']) => {
                     item-title="title"
                     item-value="value"
                     label="Load Service Provider"
-                    :rules="[rules.required]"
+                    :error-messages="errors.load_service"
                     required
                   ></v-select>
                 </v-col>
@@ -507,8 +543,8 @@ const getTextColor = (type: GcashTransaction['type']) => {
                     label="Amount"
                     prefix="₱"
                     type="number"
-                    :rules="[rules.required, rules.number, rules.minAmount]"
                     required
+                    :error-messages="errors.amount"
                   ></v-text-field>
                 </v-col>
 
@@ -516,7 +552,7 @@ const getTextColor = (type: GcashTransaction['type']) => {
                   <v-text-field
                     v-model="editForm.phone_number"
                     label="Phone Number"
-                    :rules="[rules.required, rules.phone]"
+                    :error-messages="errors.phone_number"
                     required
                     placeholder="09123456789"
                   ></v-text-field>
@@ -526,8 +562,8 @@ const getTextColor = (type: GcashTransaction['type']) => {
                   <v-text-field
                     v-model="editForm.reference"
                     label="Reference Number"
-                    :rules="[rules.required]"
                     required
+                    :error-messages="errors.reference"
                   ></v-text-field>
                 </v-col>
 
@@ -536,7 +572,7 @@ const getTextColor = (type: GcashTransaction['type']) => {
                     v-model="editForm.status"
                     :items="['PAID', 'UNPAID']"
                     label="Status"
-                    :rules="[rules.required]"
+                    :error-messages="errors.status"
                     required
                   ></v-select>
                 </v-col>
@@ -545,7 +581,7 @@ const getTextColor = (type: GcashTransaction['type']) => {
                   <v-textarea
                     v-model="editForm.description"
                     label="Description"
-                    :rules="[rules.required]"
+                    :error-messages="errors.description"
                     required
                     rows="3"
                   ></v-textarea>

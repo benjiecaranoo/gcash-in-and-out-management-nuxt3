@@ -1,4 +1,4 @@
-interface GcashTransaction {
+export interface GcashTransaction {
   id: number;
   type: 'cash_in' | 'cash_out' | 'load';
   user_id: number;
@@ -17,12 +17,14 @@ interface GcashState {
   pagination: GcashPagination | null;
 }
 
-interface ErrorResponse {
+export interface ErrorResponse {
   message: string;
   errors: any;
+  statusCode?: number;
+  data?: any;
 }
 
-interface GcashTransactionData {
+export interface GcashTransactionData {
   user_id: string;
   type: string;
   amount: number;
