@@ -1,4 +1,4 @@
-import { helpers } from '@vuelidate/validators'
+import { required } from '@vuelidate/validators'
 
 export function useValidation() {
   const validations = {
@@ -18,9 +18,18 @@ export function useValidation() {
       $validator: (v: string, formData: any) => v === formData[otherField],
       $message: `${fieldName} must match ${otherField}`
     }),
-    minAmount: (v: number) => v > 0 || 'Amount must be greater than 0',
-    phone: (v: string) => /^09\d{9}$/.test(v) || 'Must be a valid phone number (e.g., 09123456789)',
-    number: (v: any) => !isNaN(v) || 'Must be a number',
+    minAmount: (fieldName: string, min: number) => ({
+      $validator: (v: number) => v > 0,
+      $message: `${fieldName} must be greater than 0`
+    }),
+    phoneFormat: (fieldName: string) => ({
+      $validator: (v: string) => /^09\d{9}$/.test(v.toString()),
+      $message: ` ${fieldName} must be a valid (e.g., 09123456789)`
+    }),
+    numeric: (fieldName: string) => ({
+      $validator: (v: any) => !isNaN(v),
+      $message: `${fieldName} must be a number`
+    })
   }
 
   return {

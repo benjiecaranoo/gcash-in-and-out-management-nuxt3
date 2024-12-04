@@ -36,10 +36,11 @@ export default defineNuxtConfig({
     css: {
       preprocessorOptions: {
         sass: {
-          api: 'modern-compiler',
+          // silenceDeprecations: ["legacy-js-api"],
+          api: "modern-compiler"
         },
       }
-    }
+    },
     // ssr: {
     //   noExternal: ['vuetify'],
     // }

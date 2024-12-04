@@ -6,13 +6,15 @@ export interface GcashTransaction {
   description: string;
   reference: string;
   phone_number: string;
-  load_service?: 'TM' | 'GLOBE' | 'DITO' | 'SMART' | 'TNT' | 'ESIM';
-  status?: 'PAID' | 'UNPAID';
+  load_service?: 'tm' | 'globe' | 'dito' | 'smart' | 'tnt' |
+    'esim' | 'sky' | 'smart_bro' | 'globe_at_home' |
+    'cignal' | 'sky';
+  status?: 'paid' | 'unpaid';
   created_at: Date;
-  updated_at: Date;
+  updated_at?: Date;
 }
 
-interface GcashState {
+export interface GcashState {
   transactions: GcashTransaction[] | null;
   pagination: GcashPagination | null;
 }
@@ -34,7 +36,7 @@ export interface GcashTransactionData {
   phone_number: string;
 }
 
-interface GcashPagination {
+export interface GcashPagination {
   links: {
     first: string;
     last: string;

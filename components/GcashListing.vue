@@ -1,11 +1,10 @@
-import type { GcashTransaction } from '~/types/gcash-transaction'
-
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { usePagination } from '~/composables/usePagination'
 import { useGcashStore } from '~/stores/gcash-transaction';
 import useSnackbar from '@/composables/useSnackbar';
 import { useVuelidate } from '@vuelidate/core'
+import type { GcashTransaction } from '~/types/gcash-transaction'
 
 const { fetchTransactions, deleteGcash, createGcash } = useGcashStore()
 const { showSnackbar } = useSnackbar();
@@ -117,12 +116,12 @@ const loadServiceTypes = [
 const rules = {
   amount: {
     required: validations.required('Amount'),
-    minAmount: validations.minAmount(1),
-    number: validations.number
+    minAmount: validations.minAmount('Amount', 1),
+    numeric: validations.numeric('Amount')
   },
   phone_number: {
     required: validations.required('Phone number'),
-    phone: validations.phone
+    phoneFormat: validations.phoneFormat('Phone number')
   },
   description: {
     required: validations.required('Description')
@@ -154,7 +153,7 @@ const handleEdit = (item: GcashTransaction) => {
     description: item.description,
     phone_number: item.phone_number,
     reference: item.reference,
-    status: item.status,
+    status: item.status || 'unpaid',
     load_service: item.load_service
   }
   showFormModal.value = true
@@ -187,15 +186,17 @@ const handleSubmit = async () => {
     if (formMode.value === 'add') {
       const newTransaction: GcashTransaction = {
         id: Math.max(...transactions.value.map(t => t.id)) + 1,
-        created_at: new Date().toISOString(),
+        created_at: new Date(),
         ...editForm.value,
         type: editForm.value.type as 'cash_in' | 'cash_out' | 'load',
-        load_service: editForm.value.type === 'load' ? editForm.value.load_service : undefined
+        load_service: editForm.value.type === 'load' ? editForm.value.load_service : undefined,
+        user_id: 0,
+        updated_at: new Date()
       }
 
       await createGcash(newTransaction);
     } else {
-      const index = transactionStore.transactions.findIndex(item => item.id === editingItem.value?.id)
+      const index = transactionStore.transactions.findIndex((item: { id: number | undefined; }) => item.id === editingItem.value?.id)
       if (index !== -1) {
         transactionStore.transactions[index] = {
           ...transactionStore.transactions[index],
@@ -550,7 +551,7 @@ const getTextColor = (type: GcashTransaction['type']) => {
                     v-model.number="editForm.amount"
                     label="Amount"
                     prefix="₱"
-                    type="number"
+                    type="text"
                     required
                     :error-messages="errors.amount"
                   ></v-text-field>
