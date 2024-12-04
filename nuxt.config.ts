@@ -33,6 +33,13 @@ export default defineNuxtConfig({
     define: {
       'process.env.DEBUG': false,
     },
+    css: {
+      preprocessorOptions: {
+        sass: {
+          api: 'modern-compiler',
+        },
+      }
+    }
     // ssr: {
     //   noExternal: ['vuetify'],
     // }
